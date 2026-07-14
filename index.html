@@ -85,10 +85,10 @@
            By placing this out here, the browser resizes the logo image on BOTH the screen view and the PDF output.
         */
         .receipt-logo {
-            max-width: 20mm !important;  /* Tiny and elegant width cap */
-            max-height: 15mm !important; /* Tiny height cap */
+            max-width: 38mm !important;  /* Let's let it expand up to 38mm wide */
+            max-height: 25mm !important; /* Allow more vertical height for the logo design */
             object-fit: contain !important;
-            margin: 0 auto 6px auto !important;
+            margin: 4px auto 8px auto !important; /* Slightly more breathing room around it */
             display: block !important;
         }
 
@@ -98,18 +98,19 @@
         }
 
         @media print {
-            #input-form-wrapper { display: none; }
-            #receipt-box {
-                display: block;
-                width: 54mm; /* Adjusted slightly narrow for safe mobile app padding margins */
-                margin: 0;
-                padding: 4px;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 11px;
-                line-height: 1.3;
-                color: #000;
-                background: #fff;
-            }
+        #input-form-wrapper { display: none; }
+        #receipt-box {
+            display: block;
+            width: 100% !important; /* Force content to expand to the full width of the PDF canvas */
+            margin: 0;
+            padding: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            line-height: 1.3;
+            color: #000;
+            background: #fff;
+        }
+        /* Keep everything else below it identical... */
             .center { text-align: center; }
             .divider { border-top: 1px dashed #000; margin: 6px 0; }
             .flex-row { display: flex; justify-content: space-between; }
@@ -337,23 +338,36 @@
             document.getElementById('r-tax').innerText = `$${financials.taxAmount.toFixed(2)}`;
             document.getElementById('r-total').innerText = `$${financials.grandTotal.toFixed(2)}`;
 
+// 5. Reveal the receipt layout block
             const receiptElement = document.getElementById('receipt-box');
             receiptElement.style.display = 'block';
 
-            const opt = {
-                margin:       [2, 2, 2, 2],
-                filename:     `DIM_Receipt_${Date.now()}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 3, useCORS: true }, 
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'avoid' }
-            };
+            setTimeout(() => {
+                const opt = {
+                    margin:       [0, 0, 4, 0], // Added a 4mm safety margin at the bottom of the canvas
+                    filename:     `DIM_Receipt_${Date.now()}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { 
+                        scale: 3, 
+                        useCORS: true, 
+                        logging: false,
+                        scrollY: 0 // Resets scroll offsets which cause cutting errors on mobile browsers
+                    }, 
+                    // Forces a reliable, long continuous roll format (58mm wide by 220mm long)
+                    jsPDF:        { unit: 'mm', format: [58, 220], orientation: 'portrait' },
+                    pagebreak:    { mode: 'avoid' } // Instructs the engine to never split content across pages
+                };
 
-            html2pdf().set(opt).from(receiptElement).save().then(() => {
-                receiptElement.style.display = 'none';
-                currentOrderItems = [];
-                renderCartPreview();
-            });
+                // Trigger PDF generation and clean up afterwards
+                html2pdf().set(opt).from(receiptElement).save().then(() => {
+                    receiptElement.style.display = 'none';
+                    currentOrderItems = [];
+                    renderCartPreview();
+                });
+
+            }, 300); // Increased slightly to 300ms for solid rendering security
+        
+        
         }
     </script>
 </body>
