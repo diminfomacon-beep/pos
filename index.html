@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D.I.M. POS</title>
+    <title>D.I.M. POS (Large A4 Edition)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -13,10 +13,10 @@
             color: #333;
         }
         .container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
             background: #fff;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
@@ -81,44 +81,42 @@
             border-bottom: 1px dashed #dee2e6;
         }
 
-        /* FIX: GLOBAL LOGO CLASS RULES 
-           By placing this out here, the browser resizes the logo image on BOTH the screen view and the PDF output.
-        */
+        /* --- GLOBAL LOGO CLASS RULES --- */
         .receipt-logo {
-            max-width: 38mm !important;  /* Let's let it expand up to 38mm wide */
-            max-height: 25mm !important; /* Allow more vertical height for the logo design */
+            max-width: 110mm !important;  /* Giant logo footprint for A4 page width */
+            max-height: 55mm !important; 
             object-fit: contain !important;
-            margin: 4px auto 8px auto !important; /* Slightly more breathing room around it */
+            margin: 0 auto 15px auto !important;
             display: block !important;
         }
 
-        /* --- PDF THERMAL RECEIPT LAYOUT (58mm Target) --- */
+        /* --- PDF FULL-SIZE A4 RECEIPT LAYOUT --- */
         #receipt-box {
-            display: none; /* Only visible to the html2pdf engine layout layer */
+            display: none; /* Hidden on screen, shown in PDF generator */
         }
 
         @media print {
-        #input-form-wrapper { display: none; }
-        #receipt-box {
-            display: block;
-            width: 100% !important; /* Force content to expand to the full width of the PDF canvas */
-            margin: 0;
-            padding: 4px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            line-height: 1.3;
-            color: #000;
-            background: #fff;
-        }
-        /* Keep everything else below it identical... */
+            #input-form-wrapper { display: none; }
+            #receipt-box {
+                display: block;
+                width: 100% !important; /* Forces expansion to margins */
+                margin: 0;
+                padding: 18mm 15mm; /* Clean standard framing margins */
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* High-quality invoice font */
+                font-size: 18px; /* Blows up general text size */
+                line-height: 1.6;
+                color: #000;
+                background: #fff;
+                box-sizing: border-box;
+            }
             .center { text-align: center; }
-            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .divider { border-top: 3px solid #000; margin: 20px 0; } /* Thick classic invoice divider line */
             .flex-row { display: flex; justify-content: space-between; }
             
             .receipt-qr {
-                max-width: 25mm;
+                max-width: 55mm; /* Large scannable footer QR */
                 height: auto;
-                margin: 10px auto 4px auto;
+                margin: 25px auto 10px auto;
                 display: block;
             }
         }
@@ -183,51 +181,54 @@
         <div id="receipt-box">
             <div class="center">
                 <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
-                <span style="font-weight: bold; font-size: 12px; display: block; margin-bottom: 2px;">D.I.M. Bright Ideas LLC</span>
-                <span style="font-size: 10px; display: block; line-height: 1.2; color: #444;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
+                <span style="font-weight: bold; font-size: 28px; display: block; margin-bottom: 5px; letter-spacing: 0.5px;">D.I.M. Bright Ideas LLC</span>
+                <span style="font-size: 15px; display: block; line-height: 1.5; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
             </div>
                         
             <div class="divider"></div>
             
-            <div class="flex-row">
+            <div class="flex-row" style="font-size: 16px;">
                 <span id="r-date"></span>
                 <span id="r-time"></span>
             </div>
             
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-weight: bold;">
-                <span>Items</span>
+            <div class="flex-row" style="font-weight: bold; font-size: 20px;">
+                <span>Items Ordered</span>
                 <span>Price</span>
             </div>
             
-            <div id="r-items-container"></div>
+            <div id="r-items-container" style="font-size: 18px; margin-top: 15px;"></div>
             
             <div class="divider"></div>
             
-            <div class="flex-row">
-                <span>Subtotal:</span>
-                <span id="r-subtotal">$0.00</span>
-            </div>
-            <div class="flex-row">
-                <span>Discount:</span>
-                <span id="r-discount">-$0.00</span>
-            </div>
-            <div class="flex-row">
-                <span>GA Tax (8%):</span>
-                <span id="r-tax">$0.00</span>
-            </div>
-            <div class="flex-row" style="font-weight: bold; font-size: 13px;">
-                <span>TOTAL DUE:</span>
-                <span id="r-total">$0.00</span>
+            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 18px;">
+                <div class="flex-row">
+                    <span>Subtotal:</span>
+                    <span id="r-subtotal">$0.00</span>
+                </div>
+                <div class="flex-row" style="color: #444;">
+                    <span>Discount:</span>
+                    <span id="r-discount">-$0.00</span>
+                </div>
+                <div class="flex-row">
+                    <span>GA Tax (8%):</span>
+                    <span id="r-tax">$0.00</span>
+                </div>
+                <div class="divider" style="margin: 12px 0; border-top: 2px solid #000;"></div>
+                <div class="flex-row" style="font-weight: bold; font-size: 22px;">
+                    <span>TOTAL DUE:</span>
+                    <span id="r-total">$0.00</span>
+                </div>
             </div>
             
             <div class="divider"></div>
             
-            <div class="center">
-                 <p style="margin:4px 0 0 0; font-size:10px;">Thank you for supporting<br>our small business!</p>
-                 <p style="margin:4px 0 0 0; font-size:10px; font-weight: bold;">Scan for more!</p>
-                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.dimbrightideas.com" alt="QR Link">
+            <div class="center" style="margin-top: 40px;">
+                 <p style="margin:6px 0; font-size:16px; font-weight: 500;">Thank you for supporting our small business!</p>
+                 <p style="margin:6px 0; font-size:16px; font-weight: bold; color: #8a2be2;">Scan to see more of our custom products!</p>
+                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
             </div>
         </div>
     </div>
@@ -326,6 +327,7 @@
                 const rowTotal = item.price * item.qty;
                 const itemRow = document.createElement('div');
                 itemRow.className = 'flex-row';
+                itemRow.style.padding = '8px 0'; // Tighter row gaps for larger font sizes
                 itemRow.innerHTML = `
                     <span>${item.qty}x ${item.name}</span>
                     <span>$${rowTotal.toFixed(2)}</span>
@@ -338,36 +340,26 @@
             document.getElementById('r-tax').innerText = `$${financials.taxAmount.toFixed(2)}`;
             document.getElementById('r-total').innerText = `$${financials.grandTotal.toFixed(2)}`;
 
-// 5. Reveal the receipt layout block
             const receiptElement = document.getElementById('receipt-box');
             receiptElement.style.display = 'block';
 
             setTimeout(() => {
                 const opt = {
-                    margin:       [0, 0, 4, 0], // Added a 4mm safety margin at the bottom of the canvas
+                    margin:       [0, 0, 0, 0],
                     filename:     `DIM_Receipt_${Date.now()}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
-                        scale: 3, 
-                        useCORS: true, 
-                        logging: false,
-                        scrollY: 0 // Resets scroll offsets which cause cutting errors on mobile browsers
-                    }, 
-                    // Forces a reliable, long continuous roll format (58mm wide by 220mm long)
-                    jsPDF:        { unit: 'mm', format: [58, 220], orientation: 'portrait' },
-                    pagebreak:    { mode: 'avoid' } // Instructs the engine to never split content across pages
+                    html2canvas:  { scale: 2.5, useCORS: true, logging: false, scrollY: 0 }, 
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: 'avoid' }
                 };
 
-                // Trigger PDF generation and clean up afterwards
                 html2pdf().set(opt).from(receiptElement).save().then(() => {
                     receiptElement.style.display = 'none';
                     currentOrderItems = [];
                     renderCartPreview();
                 });
 
-            }, 300); // Increased slightly to 300ms for solid rendering security
-        
-        
+            }, 300);
         }
     </script>
 </body>
