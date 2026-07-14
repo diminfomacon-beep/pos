@@ -81,12 +81,25 @@
             border-bottom: 1px dashed #dee2e6;
         }
 
-        /* --- GLOBAL LOGO CLASS RULES --- */
+        /* --- GLOBAL HEADER ELEMENT STYLES --- */
+        .receipt-header-grid {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 20px !important;
+            width: 100% !important;
+        }
         .receipt-logo {
-            max-width: 110mm !important;  /* Giant logo footprint for A4 page width */
-            max-height: 55mm !important; 
+            max-width: 65mm !important; /* Adjusted slightly to share top row space beautifully */
+            max-height: 45mm !important; 
             object-fit: contain !important;
-            margin: 0 auto 15px auto !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+        .receipt-qr {
+            max-width: 45mm !important; /* Balanced sizing for side-by-side display */
+            height: auto !important;
+            margin: 0 !important;
             display: block !important;
         }
 
@@ -99,26 +112,19 @@
             #input-form-wrapper { display: none; }
             #receipt-box {
                 display: block;
-                width: 100% !important; /* Forces expansion to margins */
+                width: 100% !important; 
                 margin: 0;
-                padding: 18mm 15mm; /* Clean standard framing margins */
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* High-quality invoice font */
-                font-size: 25px; /* Blows up general text size */
+                padding: 18mm 15mm; 
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                font-size: 18px; 
                 line-height: 1.6;
                 color: #000;
                 background: #fff;
                 box-sizing: border-box;
             }
             .center { text-align: center; }
-            .divider { border-top: 3px solid #000; margin: 20px 0; } /* Thick classic invoice divider line */
+            .divider { border-top: 3px solid #000; margin: 20px 0; } 
             .flex-row { display: flex; justify-content: space-between; }
-            
-            .receipt-qr {
-                max-width: 55mm; /* Large scannable footer QR */
-                height: auto;
-                margin: 25px auto 10px auto;
-                display: block;
-            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -127,7 +133,7 @@
 
     <div class="container">
         <div id="input-form-wrapper">
-            <h2>D.I.M. POS</h2>
+            <h2>D.I.M. Simple POS</h2>
             
             <div class="form-group">
                 <label for="prod-name">Product Name</label>
@@ -178,30 +184,43 @@
             <button type="button" class="btn btn-success" onclick="generateAndExportPDF()">Generate & Export Order PDF</button>
         </div>
 
+        <!-- Hidden A4 Print Matrix -->
         <div id="receipt-box">
-            <div class="center">
+            
+            <!-- NEW: Top header grid containing Logo on the Left and QR Code on the Right -->
+            <div class="receipt-header-grid">
+                <!-- LEFT SIDE LOGO -->
                 <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
-                <span style="font-size: 40px; display: block; line-height: 1.5; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
+                
+                <!-- CENTER TEXT DESCRIPTION -->
+                <div style="flex: 1; text-align: center; padding: 0 10px;">
+                    <span style="font-weight: bold; font-size: 26px; display: block; margin-bottom: 5px; line-height: 1.2;">D.I.M. Bright Ideas LLC</span>
+                    <span style="font-size: 14px; display: block; line-height: 1.4; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
+                </div>
+                
+                <!-- RIGHT SIDE QR CODE -->
+                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
             </div>
                         
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-size: 40px;">
+            <div class="flex-row" style="font-size: 16px;">
                 <span id="r-date"></span>
                 <span id="r-time"></span>
             </div>
             
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-weight: bold; font-size: 40px;">
-                <span>Items</span>
+            <div class="flex-row" style="font-weight: bold; font-size: 20px;">
+                <span>Items Ordered</span>
+                <span>Price</span>
             </div>
             
-            <div id="r-items-container" style="font-size: 40px; margin-top: 15px;"></div>
+            <div id="r-items-container" style="font-size: 18px; margin-top: 15px;"></div>
             
             <div class="divider"></div>
             
-            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 40px;">
+            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 18px;">
                 <div class="flex-row">
                     <span>Subtotal:</span>
                     <span id="r-subtotal">$0.00</span>
@@ -215,7 +234,7 @@
                     <span id="r-tax">$0.00</span>
                 </div>
                 <div class="divider" style="margin: 12px 0; border-top: 2px solid #000;"></div>
-                <div class="flex-row" style="font-weight: bold; font-size: 40px;">
+                <div class="flex-row" style="font-weight: bold; font-size: 22px;">
                     <span>TOTAL DUE:</span>
                     <span id="r-total">$0.00</span>
                 </div>
@@ -223,10 +242,8 @@
             
             <div class="divider"></div>
             
-            <div class="center" style="margin-top: 40px;">
-                 <p style="margin:6px 0; font-size:16px; font-weight: 500;">Thank you for supporting our small business!</p>
-                 <p style="margin:6px 0; font-size:16px; font-weight: bold; color: #000;">Scan to see more of our custom products!</p>
-                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
+            <div class="center" style="margin-top: 25px;">
+                 <p style="margin:4px 0; font-size:18px; font-weight: bold;">Thank you for supporting our small business!</p>
             </div>
         </div>
     </div>
@@ -325,7 +342,7 @@
                 const rowTotal = item.price * item.qty;
                 const itemRow = document.createElement('div');
                 itemRow.className = 'flex-row';
-                itemRow.style.padding = '8px 0'; // Tighter row gaps for larger font sizes
+                itemRow.style.padding = '8px 0';
                 itemRow.innerHTML = `
                     <span>${item.qty}x ${item.name}</span>
                     <span>$${rowTotal.toFixed(2)}</span>
