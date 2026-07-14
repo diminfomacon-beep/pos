@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.I.M. Multi-Item POS</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #8a2be2;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .col {
+            flex: 1;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn-primary { background: #8a2be2; }
+        .btn-primary:hover { background: #701fc2; }
+        .btn-secondary { background: #6c757d; }
+        .btn-success { background: #198754; margin-top: 20px; }
+        
+        /* Interactive Draft Cart Style */
+        .cart-preview {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 4px 0;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        /* --- PDF THERMAL RECEIPT LAYOUT (58mm Target) --- */
+        #receipt-box {
+            display: none; /* Only visible to the html2pdf engine layout layer */
+        }
+
+        @media print {
+            #input-form-wrapper { display: none; }
+            #receipt-box {
+                display: block;
+                width: 54mm; /* Adjusted slightly narrow for safe mobile app padding margins */
+                margin: 0;
+                padding: 4px;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 11px;
+                line-height: 1.3;
+                color: #000;
+                background: #fff;
+            }
+            .center { text-align: center; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .flex-row { display: flex; justify-content: space-between; }
+            
+            /* Logo & QR Sizing rules inside thermal constraints */
+            .receipt-logo {
+                max-width: 45mm;
+                height: auto;
+                margin: 0 auto 6px auto;
+                display: block;
+            }
+            .receipt-qr {
+                max-width: 25mm;
+                height: auto;
+                margin: 10px auto 4px auto;
+                display: block;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div id="input-form-wrapper">
+            <h2>D.I.M. Simple POS</h2>
+            
+            <div class="form-group">
+                <label for="prod-name">Product Name</label>
+                <input type="text" id="prod-name" placeholder="e.g., Custom Tumbler">
+            </div>
+
+            <div class="row">
+                <div class="form-group col">
+                    <label for="prod-qty">Qty</label>
+                    <input type="number" id="prod-qty" value="1" min="1">
+                </div>
+                <div class="form-group col">
+                    <label for="prod-price">Price ($)</label>
+                    <input type="number" id="prod-price" placeholder="0.00" step="0.01">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary" onclick="addItemToOrder()">+ Add Item to Current Order</button>
+
+            <div class="cart-preview">
+                <strong style="font-size: 15px; color:#8a2be2;">Current Order Items:</strong>
+                <div id="cart-list" style="margin: 8px 0;">
+                    <div class="text-muted" id="empty-cart-msg" style="font-size: 13px; text-align:center;">No items added yet.</div>
+                </div>
+                <div class="row style='margin-top:10px;'">
+                    <div class="form-group col">
+                        <label for="prod-discount">Order Discount</label>
+                        <select id="prod-discount" onchange="recalculateLiveTotals()">
+                            <option value="0">None</option>
+                            <option value="0.05">5%</option>
+                            <option value="0.10">10%</option>
+                            <option value="0.15">15%</option>
+                        </select>
+                    </div>
+                    <div class="form-group col">
+                        <label for="prod-tax">GA Tax (8%)</label>
+                        <select id="prod-tax" onchange="recalculateLiveTotals()">
+                            <option value="0.08">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="font-weight: bold; font-size:15px; text-align:right; margin-top:5px;" id="live-total-display">
+                    Est. Total: $0.00
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success" onclick="generateAndExportPDF()">Generate & Export Order PDF</button>
+        </div>
+
+        <div id="receipt-box">
+            <div class="center">
+                <img class="receipt-logo" src="https://placehold.co/300x120/000000/FFFFFF?text=D.I.M.+LOGO" alt="Logo">
+                <strong>D.I.M. Bright Ideas LLC</strong><br>
+                Custom Prints • Personalized Gifts• Make It Yours!<br>
+                www.dimbrightideas.com
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="flex-row">
+                <span id="r-date"></span>
+                <span id="r-time"></span>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="flex-row" style="font-weight: bold;">
+                <span>Items</span>
+                <span>Price</span>
+            </div>
+            
+            <div id="r-items-container"></div>
+            
+            <div class="divider"></div>
+            
+            <div class="flex-row">
+                <span>Subtotal:</span>
+                <span id="r-subtotal">$0.00</span>
+            </div>
+            <div class="flex-row">
+                <span>Discount:</span>
+                <span id="r-discount">-$0.00</span>
+            </div>
+            <div class="flex-row">
+                <span>GA Tax (8%):</span>
+                <span id="r-tax">$0.00</span>
+            </div>
+            <div class="flex-row" style="font-weight: bold; font-size: 13px;">
+                <span>TOTAL DUE:</span>
+                <span id="r-total">$0.00</span>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="center">
+                 <p style="margin:4px 0 0 0; font-size:10px;">Thank you for supporting<br>our small business!</p>
+                 <p style="margin:4px 0 0 0; font-size:10px;">Scan for more!</p>
+                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.dimbrightideas.com" alt="QR Link">
+               
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Memory state storage array for running order details
+        let currentOrderItems = [];
+
+        function addItemToOrder() {
+            const nameInput = document.getElementById('prod-name');
+            const qtyInput = document.getElementById('prod-qty');
+            const priceInput = document.getElementById('prod-price');
+
+            const name = nameInput.value.trim() || "Handmade Item";
+            const qty = parseInt(qtyInput.value) || 1;
+            const price = parseFloat(priceInput.value) || 0;
+
+            if(price <= 0) {
+                alert("Please enter a valid price before adding.");
+                return;
+            }
+
+            // Append structured dataset token entry block
+            currentOrderItems.push({ name, qty, price });
+
+            // Reset baseline item descriptors for subsequent inputs entries
+            nameInput.value = "";
+            qtyInput.value = "1";
+            priceInput.value = "";
+
+            renderCartPreview();
+        }
+
+        function renderCartPreview() {
+            const listContainer = document.getElementById('cart-list');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            
+            if (currentOrderItems.length === 0) {
+                listContainer.innerHTML = '';
+                listContainer.appendChild(emptyMsg);
+                return;
+            }
+
+            if(emptyMsg) emptyMsg.remove();
+            listContainer.innerHTML = '';
+
+            currentOrderItems.forEach((item, index) => {
+                const totalCost = item.price * item.qty;
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                row.innerHTML = `
+                    <span>${item.qty}x ${item.name}</span>
+                    <span>$${totalCost.toFixed(2)}</span>
+                `;
+                listContainer.appendChild(row);
+            });
+
+            recalculateLiveTotals();
+        }
+
+        function calculateFinancials() {
+            let subtotal = 0;
+            currentOrderItems.forEach(item => {
+                subtotal += (item.price * item.qty);
+            });
+
+            const discountPct = parseFloat(document.getElementById('prod-discount').value) || 0;
+            const taxRate = parseFloat(document.getElementById('prod-tax').value) || 0;
+
+            const discountAmount = subtotal * discountPct;
+            const taxableAmount = subtotal - discountAmount;
+            const taxAmount = taxableAmount * taxRate;
+            const grandTotal = taxableAmount + taxAmount;
+
+            return { subtotal, discountAmount, taxAmount, grandTotal };
+        }
+
+        function recalculateLiveTotals() {
+            const financials = calculateFinancials();
+            document.getElementById('live-total-display').innerText = `Est. Total: $${financials.grandTotal.toFixed(2)}`;
+        }
+
+        function generateAndExportPDF() {
+            if(currentOrderItems.length === 0) {
+                alert("Your order is empty! Add at least one item first.");
+                return;
+            }
+
+            const financials = calculateFinancials();
+            const now = new Date();
+
+            // Inject core timestamps
+            document.getElementById('r-date').innerText = "Date: " + now.toLocaleDateString();
+            document.getElementById('r-time').innerText = "Time: " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Construct and inject multi-item rows layout view safely
+            const printItemsContainer = document.getElementById('r-items-container');
+            printItemsContainer.innerHTML = '';
+            
+            currentOrderItems.forEach(item => {
+                const rowTotal = item.price * item.qty;
+                const itemRow = document.createElement('div');
+                itemRow.className = 'flex-row';
+                itemRow.innerHTML = `
+                    <span>${item.qty}x ${item.name}</span>
+                    <span>$${rowTotal.toFixed(2)}</span>
+                `;
+                printItemsContainer.appendChild(itemRow);
+            });
+
+            // Set final accounting summary strings
+            document.getElementById('r-subtotal').innerText = `$${financials.subtotal.toFixed(2)}`;
+            document.getElementById('r-discount').innerText = `-$${financials.discountAmount.toFixed(2)}`;
+            document.getElementById('r-tax').innerText = `$${financials.taxAmount.toFixed(2)}`;
+            document.getElementById('r-total').innerText = `$${financials.grandTotal.toFixed(2)}`;
+
+            // Invoke PDF generation parameters matching WalkPrint physical 58mm profiles
+            const receiptElement = document.getElementById('receipt-box');
+            receiptElement.style.display = 'block';
+
+            // Long canvas setup wraps infinite line additions without truncation issues
+            const opt = {
+                margin:       [2, 2, 2, 2], // Prevents clipping at the edges
+                filename:     `DIM_Receipt_${Date.now()}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 3, useCORS: true }, 
+                // This tells jsPDF to treat the roll as one single endless canvas page:
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'avoid' } // FORCES the entire receipt to stay on 1 page
+            };
+
+            html2pdf().set(opt).from(receiptElement).save().then(() => {
+                receiptElement.style.display = 'none';
+                // Clear state on success to ready register for next checkout loop safely
+                currentOrderItems = [];
+                renderCartPreview();
+            });
+        }
+    </script>
+</body>
+</html>
