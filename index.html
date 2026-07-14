@@ -86,8 +86,10 @@
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
-            gap: 20px !important;
+            gap: 10px !important;
             width: 100% !important;
+            margin: 10px 10px !important;
+
         }
         .receipt-logo {
             max-width: 65mm !important; /* Adjusted slightly to share top row space beautifully */
@@ -133,7 +135,7 @@
 
     <div class="container">
         <div id="input-form-wrapper">
-            <h2>D.I.M. Simple POS</h2>
+            <h2>D.I.M. POS</h2>
             
             <div class="form-group">
                 <label for="prod-name">Product Name</label>
@@ -154,11 +156,11 @@
             <button type="button" class="btn btn-secondary" onclick="addItemToOrder()">+ Add Item to Current Order</button>
 
             <div class="cart-preview">
-                <strong style="font-size: 15px; color:#8a2be2;">Current Order Items:</strong>
+                <strong style="font-size: 15px; color:#000;">Current Order Items:</strong>
                 <div id="cart-list" style="margin: 8px 0;">
                     <div class="text-muted" id="empty-cart-msg" style="font-size: 13px; text-align:center;">No items added yet.</div>
                 </div>
-                <div class="row style='margin-top:10px;'">
+                <div class="row" style="margin-top:10px;">
                     <div class="form-group col">
                         <label for="prod-discount">Order Discount</label>
                         <select id="prod-discount" onchange="recalculateLiveTotals()">
@@ -188,39 +190,44 @@
         <div id="receipt-box">
             
             <!-- NEW: Top header grid containing Logo on the Left and QR Code on the Right -->
-            <div class="receipt-header-grid">
-                <!-- LEFT SIDE LOGO -->
-                <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
-                
-                <!-- CENTER TEXT DESCRIPTION -->
-                <div style="flex: 1; text-align: center; padding: 0 10px;">
-                    <span style="font-weight: bold; font-size: 26px; display: block; margin-bottom: 5px; line-height: 1.2;">D.I.M. Bright Ideas LLC</span>
-                    <span style="font-size: 14px; display: block; line-height: 1.4; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
+            <!-- Centered Header Block -->
+            <div style="max-width: 70%; margin: 0 auto;">
+                <!-- Logo and QR Code positioned closer together -->
+                <div class="receipt-header-grid" style="justify-content: space-around !important; gap: 10px !important;">
+                    <!-- LEFT SIDE LOGO -->
+                    <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
+                    
+                    <!-- RIGHT SIDE QR CODE -->
+                    <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
                 </div>
                 
-                <!-- RIGHT SIDE QR CODE -->
-                <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
+                <!-- Center-Aligned Tagline and Links -->
+                <div style="text-align: center; margin-top: 15px;">
+                    <span style="font-size: 20px; display: block; line-height: 1.4; color: #222; font-weight: 500;">
+                        Custom Prints • Personalized Gifts • Make It Yours!<br>
+                        <a href="https://www.dimbrightideas.com" style="color: #222; text-decoration: none;">www.dimbrightideas.com</a>
+                    </span>
+                </div>
             </div>
                         
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-size: 16px;">
+            <div class="flex-row" style="font-size: 20px;">
                 <span id="r-date"></span>
                 <span id="r-time"></span>
             </div>
             
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-weight: bold; font-size: 20px;">
-                <span>Items Ordered</span>
-                <span>Price</span>
+            <div class="flex-row" style="font-weight: bold; font-size: 30px;">
+                <span>Items</span>
             </div>
             
-            <div id="r-items-container" style="font-size: 18px; margin-top: 15px;"></div>
+            <div id="r-items-container" style="font-size: 40px; margin-top: 15px;"></div>
             
             <div class="divider"></div>
             
-            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 18px;">
+            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 30px;">
                 <div class="flex-row">
                     <span>Subtotal:</span>
                     <span id="r-subtotal">$0.00</span>
@@ -234,7 +241,7 @@
                     <span id="r-tax">$0.00</span>
                 </div>
                 <div class="divider" style="margin: 12px 0; border-top: 2px solid #000;"></div>
-                <div class="flex-row" style="font-weight: bold; font-size: 22px;">
+                <div class="flex-row" style="font-weight: bold; font-size: 30px;">
                     <span>TOTAL DUE:</span>
                     <span id="r-total">$0.00</span>
                 </div>
@@ -243,7 +250,7 @@
             <div class="divider"></div>
             
             <div class="center" style="margin-top: 25px;">
-                 <p style="margin:4px 0; font-size:18px; font-weight: bold;">Thank you for supporting our small business!</p>
+                 <p style="margin:4px 0; font-size:20px; font-weight: bold;">Thank you for supporting our small business!</p>
             </div>
         </div>
     </div>
