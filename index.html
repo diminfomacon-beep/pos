@@ -103,7 +103,7 @@
                 margin: 0;
                 padding: 18mm 15mm; /* Clean standard framing margins */
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* High-quality invoice font */
-                font-size: 18px; /* Blows up general text size */
+                font-size: 25px; /* Blows up general text size */
                 line-height: 1.6;
                 color: #000;
                 background: #fff;
@@ -127,7 +127,7 @@
 
     <div class="container">
         <div id="input-form-wrapper">
-            <h2>D.I.M. Simple POS</h2>
+            <h2>D.I.M. POS</h2>
             
             <div class="form-group">
                 <label for="prod-name">Product Name</label>
@@ -181,29 +181,27 @@
         <div id="receipt-box">
             <div class="center">
                 <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
-                <span style="font-weight: bold; font-size: 28px; display: block; margin-bottom: 5px; letter-spacing: 0.5px;">D.I.M. Bright Ideas LLC</span>
-                <span style="font-size: 15px; display: block; line-height: 1.5; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
+                <span style="font-size: 28px; display: block; line-height: 1.5; color: #222;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
             </div>
                         
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-size: 16px;">
+            <div class="flex-row" style="font-size: 28px;">
                 <span id="r-date"></span>
                 <span id="r-time"></span>
             </div>
             
             <div class="divider"></div>
             
-            <div class="flex-row" style="font-weight: bold; font-size: 20px;">
-                <span>Items Ordered</span>
-                <span>Price</span>
+            <div class="flex-row" style="font-weight: bold; font-size: 28px;">
+                <span>Items</span>
             </div>
             
-            <div id="r-items-container" style="font-size: 18px; margin-top: 15px;"></div>
+            <div id="r-items-container" style="font-size: 28px; margin-top: 15px;"></div>
             
             <div class="divider"></div>
             
-            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 18px;">
+            <div style="width: 100%; max-width: 400px; margin-left: auto; font-size: 28px;">
                 <div class="flex-row">
                     <span>Subtotal:</span>
                     <span id="r-subtotal">$0.00</span>
@@ -217,7 +215,7 @@
                     <span id="r-tax">$0.00</span>
                 </div>
                 <div class="divider" style="margin: 12px 0; border-top: 2px solid #000;"></div>
-                <div class="flex-row" style="font-weight: bold; font-size: 22px;">
+                <div class="flex-row" style="font-weight: bold; font-size: 28px;">
                     <span>TOTAL DUE:</span>
                     <span id="r-total">$0.00</span>
                 </div>
@@ -227,7 +225,7 @@
             
             <div class="center" style="margin-top: 40px;">
                  <p style="margin:6px 0; font-size:16px; font-weight: 500;">Thank you for supporting our small business!</p>
-                 <p style="margin:6px 0; font-size:16px; font-weight: bold; color: #8a2be2;">Scan to see more of our custom products!</p>
+                 <p style="margin:6px 0; font-size:16px; font-weight: bold; color: #000;">Scan to see more of our custom products!</p>
                 <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://www.dimbrightideas.com" alt="QR Link">
             </div>
         </div>
