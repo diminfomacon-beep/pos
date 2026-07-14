@@ -81,6 +81,17 @@
             border-bottom: 1px dashed #dee2e6;
         }
 
+        /* FIX: GLOBAL LOGO CLASS RULES 
+           By placing this out here, the browser resizes the logo image on BOTH the screen view and the PDF output.
+        */
+        .receipt-logo {
+            max-width: 20mm !important;  /* Tiny and elegant width cap */
+            max-height: 15mm !important; /* Tiny height cap */
+            object-fit: contain !important;
+            margin: 0 auto 6px auto !important;
+            display: block !important;
+        }
+
         /* --- PDF THERMAL RECEIPT LAYOUT (58mm Target) --- */
         #receipt-box {
             display: none; /* Only visible to the html2pdf engine layout layer */
@@ -103,13 +114,6 @@
             .divider { border-top: 1px dashed #000; margin: 6px 0; }
             .flex-row { display: flex; justify-content: space-between; }
             
-            /* Logo & QR Sizing rules inside thermal constraints */
-            .receipt-logo {
-                max-width: 25mm;
-                height: auto;
-                margin: 10px auto 6px auto;
-                display: block;
-            }
             .receipt-qr {
                 max-width: 25mm;
                 height: auto;
@@ -178,10 +182,10 @@
         <div id="receipt-box">
             <div class="center">
                 <img class="receipt-logo" src="https://raw.githubusercontent.com/diminfomacon-beep/pos/main/logo.png" alt="Logo">
-                Custom Prints • Personalized Gifts• Make It Yours!<br>
-                www.dimbrightideas.com
+                <span style="font-weight: bold; font-size: 12px; display: block; margin-bottom: 2px;">D.I.M. Bright Ideas LLC</span>
+                <span style="font-size: 10px; display: block; line-height: 1.2; color: #444;">Custom Prints • Personalized Gifts • Make It Yours!<br>www.dimbrightideas.com</span>
             </div>
-            
+                        
             <div class="divider"></div>
             
             <div class="flex-row">
@@ -221,15 +225,13 @@
             
             <div class="center">
                  <p style="margin:4px 0 0 0; font-size:10px;">Thank you for supporting<br>our small business!</p>
-                 <p style="margin:4px 0 0 0; font-size:10px;">Scan for more!</p>
+                 <p style="margin:4px 0 0 0; font-size:10px; font-weight: bold;">Scan for more!</p>
                 <img class="receipt-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.dimbrightideas.com" alt="QR Link">
-               
             </div>
         </div>
     </div>
 
     <script>
-        // Memory state storage array for running order details
         let currentOrderItems = [];
 
         function addItemToOrder() {
@@ -246,10 +248,8 @@
                 return;
             }
 
-            // Append structured dataset token entry block
             currentOrderItems.push({ name, qty, price });
 
-            // Reset baseline item descriptors for subsequent inputs entries
             nameInput.value = "";
             qtyInput.value = "1";
             priceInput.value = "";
@@ -315,11 +315,9 @@
             const financials = calculateFinancials();
             const now = new Date();
 
-            // Inject core timestamps
             document.getElementById('r-date').innerText = "Date: " + now.toLocaleDateString();
             document.getElementById('r-time').innerText = "Time: " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            // Construct and inject multi-item rows layout view safely
             const printItemsContainer = document.getElementById('r-items-container');
             printItemsContainer.innerHTML = '';
             
@@ -334,30 +332,25 @@
                 printItemsContainer.appendChild(itemRow);
             });
 
-            // Set final accounting summary strings
             document.getElementById('r-subtotal').innerText = `$${financials.subtotal.toFixed(2)}`;
             document.getElementById('r-discount').innerText = `-$${financials.discountAmount.toFixed(2)}`;
             document.getElementById('r-tax').innerText = `$${financials.taxAmount.toFixed(2)}`;
             document.getElementById('r-total').innerText = `$${financials.grandTotal.toFixed(2)}`;
 
-            // Invoke PDF generation parameters matching WalkPrint physical 58mm profiles
             const receiptElement = document.getElementById('receipt-box');
             receiptElement.style.display = 'block';
 
-            // Long canvas setup wraps infinite line additions without truncation issues
             const opt = {
-                margin:       [2, 2, 2, 2], // Prevents clipping at the edges
+                margin:       [2, 2, 2, 2],
                 filename:     `DIM_Receipt_${Date.now()}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 3, useCORS: true }, 
-                // This tells jsPDF to treat the roll as one single endless canvas page:
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'avoid' } // FORCES the entire receipt to stay on 1 page
+                pagebreak:    { mode: 'avoid' }
             };
 
             html2pdf().set(opt).from(receiptElement).save().then(() => {
                 receiptElement.style.display = 'none';
-                // Clear state on success to ready register for next checkout loop safely
                 currentOrderItems = [];
                 renderCartPreview();
             });
